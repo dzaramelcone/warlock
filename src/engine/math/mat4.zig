@@ -1,36 +1,4 @@
-const std = @import("std");
-
-pub const Vec3 = struct {
-    x: f32,
-    y: f32,
-    z: f32,
-
-    pub fn sub(a: Vec3, b: Vec3) Vec3 {
-        return .{ .x = a.x - b.x, .y = a.y - b.y, .z = a.z - b.z };
-    }
-
-    pub fn scale(v: Vec3, s: f32) Vec3 {
-        return .{ .x = v.x * s, .y = v.y * s, .z = v.z * s };
-    }
-
-    pub fn dot(a: Vec3, b: Vec3) f32 {
-        return a.x * b.x + a.y * b.y + a.z * b.z;
-    }
-
-    pub fn cross(a: Vec3, b: Vec3) Vec3 {
-        return .{
-            .x = a.y * b.z - a.z * b.y,
-            .y = a.z * b.x - a.x * b.z,
-            .z = a.x * b.y - a.y * b.x,
-        };
-    }
-
-    pub fn normalize(v: Vec3) Vec3 {
-        const len = @sqrt(dot(v, v));
-        if (len == 0.0) return v;
-        return scale(v, 1.0 / len);
-    }
-};
+const Vec3 = @import("vec3.zig").Vec3;
 
 pub const Vec4 = struct {
     x: f32,
@@ -82,24 +50,11 @@ pub const Mat4 = struct {
         return out;
     }
 
-    pub fn rotationY(angle: f32) Mat4 {
-        const c = @cos(angle);
-        const s = @sin(angle);
+    pub fn scale(v: Vec3) Mat4 {
         return .{ .m = .{
-            c, 0, s, 0,
-            0, 1, 0, 0,
-            -s, 0, c, 0,
-            0, 0, 0, 1,
-        } };
-    }
-
-    pub fn rotationX(angle: f32) Mat4 {
-        const c = @cos(angle);
-        const s = @sin(angle);
-        return .{ .m = .{
-            1, 0, 0, 0,
-            0, c, -s, 0,
-            0, s, c, 0,
+            v.x, 0, 0, 0,
+            0, v.y, 0, 0,
+            0, 0, v.z, 0,
             0, 0, 0, 1,
         } };
     }
@@ -127,7 +82,3 @@ pub const Mat4 = struct {
         } };
     }
 };
-
-pub fn radians(degrees: f32) f32 {
-    return std.math.degreesToRadians(degrees);
-}
