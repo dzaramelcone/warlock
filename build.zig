@@ -8,10 +8,10 @@ pub fn build(b: *std.Build) void {
     const project_dir = b.option([]const u8, "project-dir", "Project directory containing src/ and assets/") orelse "project";
     const project_src_dir = b.fmt("{s}/src", .{project_dir});
     const project_assets_dir = b.fmt("{s}/assets", .{project_dir});
-    const glslang = b.option([]const u8, "glslang", "Path to glslangValidator executable") orelse
-        b.findProgram(&.{ "glslangValidator.exe", "glslangValidator" }, &.{
+    const slangc = b.option([]const u8, "slangc", "Path to slangc executable") orelse
+        b.findProgram(&.{ "slangc.exe", "slangc" }, &.{
             "C:\\VulkanSDK\\1.4.341.1\\Bin",
-        }) catch @panic("glslangValidator not found; install the Vulkan SDK or pass -Dglslang=path\\to\\glslangValidator.exe");
+        }) catch @panic("slangc not found; install the Vulkan SDK or pass -Dslangc=path\\to\\slangc.exe");
 
     const options = b.addOptions();
     options.addOption(bool, "enable_hot_reload", enable_hot_reload);
@@ -36,7 +36,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .engine_module = engine_module,
         .project_assets_dir = project_assets_dir,
-        .glslang = glslang,
+        .slangc = slangc,
     });
 
     const root_module = b.createModule(.{

@@ -1,0 +1,89 @@
+.{
+    .entities = .{
+        .{
+            .name = "main_camera",
+            .components = .{
+                .{ .transform = .{ .position = .{ 0, 1.7, -7 } } },
+                .{
+                    .camera = .{
+                        .fov_y_degrees = 65,
+                        .near = 0.1,
+                        .far = 100,
+                    },
+                },
+            },
+        },
+        .{
+            .name = "cube",
+            .components = .{
+                .{ .transform = .{ .position = .{ -1.6, 0, 0 } } },
+                .{ .mesh = .{ .id = "cube" } },
+                .{ .material = .{ .id = "default_surface" } },
+            },
+        },
+        .{
+            .name = "pyramid",
+            .components = .{
+                .{ .transform = .{ .position = .{ 1.7, 0.1, 0.4 } } },
+                .{ .mesh = .{ .id = "pyramid" } },
+                .{ .material = .{ .id = "default_surface" } },
+            },
+        },
+        .{
+            .name = "teapot",
+            .components = .{
+                .{ .transform = .{ .position = .{ 0, -0.05, -0.8 }, .scale = .{ 1.1, 1.1, 1.1 } } },
+                .{ .mesh = .{ .id = "teapot" } },
+                .{ .material = .{ .id = "default_surface" } },
+            },
+        },
+        .{
+            .name = "sphere",
+            .components = .{
+                .{ .transform = .{ .position = .{ -3.0, -0.05, -0.6 }, .scale = .{ 0.85, 0.85, 0.85 } } },
+                .{ .mesh = .{ .id = "sphere" } },
+                .{ .material = .{ .id = "default_surface" } },
+            },
+        },
+        .{
+            .name = "runtime_cube",
+            .components = .{
+                .{ .transform = .{ .position = .{ 2.7, -0.25, -0.9 }, .scale = .{ 0.6, 0.6, 0.6 } } },
+                .{ .mesh = .{ .id = "cube" } },
+                .{ .material = .{ .id = "default_surface" } },
+            },
+        },
+        .{
+            .name = "kit_checker_plate",
+            .components = .{
+                .{ .transform = .{ .position = .{ -3.3, -1.05, 1.7 }, .scale = .{ 0.65, 1, 0.65 } } },
+                .{ .mesh = .{ .id = "kit_tile_checker" } },
+                .{ .material = .{ .id = "default_surface" } },
+            },
+        },
+        .{
+            .name = "kit_panel_plate",
+            .components = .{
+                .{ .transform = .{ .position = .{ -1.1, -1.05, 1.7 }, .scale = .{ 0.65, 1, 0.65 } } },
+                .{ .mesh = .{ .id = "kit_tile_panel" } },
+                .{ .material = .{ .id = "default_surface" } },
+            },
+        },
+        .{
+            .name = "kit_warning_plate",
+            .components = .{
+                .{ .transform = .{ .position = .{ 1.1, -1.05, 1.7 }, .scale = .{ 0.65, 1, 0.65 } } },
+                .{ .mesh = .{ .id = "kit_tile_warning" } },
+                .{ .material = .{ .id = "default_surface" } },
+            },
+        },
+        .{
+            .name = "kit_grid_plate",
+            .components = .{
+                .{ .transform = .{ .position = .{ 3.3, -1.05, 1.7 }, .scale = .{ 0.65, 1, 0.65 } } },
+                .{ .mesh = .{ .id = "kit_tile_grid" } },
+                .{ .material = .{ .id = "default_surface" } },
+            },
+        },
+    },
+}

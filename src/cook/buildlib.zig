@@ -5,7 +5,7 @@ pub const Options = struct {
     optimize: std.builtin.OptimizeMode,
     engine_module: *std.Build.Module,
     project_assets_dir: []const u8,
-    glslang: []const u8,
+    slangc: []const u8,
 };
 
 pub const Result = struct {
@@ -49,9 +49,9 @@ pub fn addSteps(b: *std.Build, options: Options) Result {
     const texture_jobs = discoverTextureJobs(b, options.project_assets_dir);
     installCookedAssets(b, exe, options.project_assets_dir, texture_jobs);
 
-    const shader_step = b.step("shaders", "Compile GLSL shaders to SPIR-V");
-    installShader(b, shader_step, options.glslang, b.fmt("{s}/shaders/scene.vert", .{options.project_assets_dir}), "scene.vert.spv");
-    installShader(b, shader_step, options.glslang, b.fmt("{s}/shaders/scene.frag", .{options.project_assets_dir}), "scene.frag.spv");
+    const shader_step = b.step("shaders", "Compile Slang shaders to SPIR-V");
+    installShader(b, shader_step, options.slangc, b.fmt("{s}/shaders", .{options.project_assets_dir}), b.fmt("{s}/shaders/scene.vert.slang", .{options.project_assets_dir}), "vertex", "scene.vert.spv");
+    installShader(b, shader_step, options.slangc, b.fmt("{s}/shaders", .{options.project_assets_dir}), b.fmt("{s}/shaders/scene.frag.slang", .{options.project_assets_dir}), "fragment", "scene.frag.spv");
 
     return .{
         .module = module,
@@ -129,12 +129,17 @@ fn installCookedAssets(
 fn installShader(
     b: *std.Build,
     shader_step: *std.Build.Step,
-    glslang: []const u8,
+    slangc: []const u8,
+    include_dir: []const u8,
     source_path: []const u8,
+    stage: []const u8,
     output_name: []const u8,
 ) void {
-    const compile = b.addSystemCommand(&.{ glslang, "-V" });
+    const compile = b.addSystemCommand(&.{slangc});
     compile.addFileArg(b.path(source_path));
+    compile.addArg("-I");
+    compile.addDirectoryArg(b.path(include_dir));
+    compile.addArgs(&.{ "-target", "spirv", "-profile", "glsl_450", "-entry", "main", "-stage", stage });
     compile.addArg("-o");
     const spv = compile.addOutputFileArg(output_name);
     compile.addFileInput(b.path(source_path));

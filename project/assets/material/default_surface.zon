@@ -1,0 +1,17 @@
+.{
+    .shader = .{
+        .vertex = "assets/shaders/scene.vert.spv",
+        .fragment = "assets/shaders/scene.frag.spv",
+        .id = 0,
+    },
+    .base_color = 0x00ffffff,
+    .texture = .{
+        .path = "assets/textures/armor_atlas.wtex",
+        .sampler = .{
+            .mag_filter = .linear,
+            .min_filter = .linear,
+            .mipmap_mode = .linear,
+            .address_mode = .repeat,
+        },
+    },
+}
