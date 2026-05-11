@@ -115,6 +115,17 @@ pub const Window = struct {
     pub fn deinit(self: Window) void {
         _ = self;
     }
+
+    pub fn pump(self: *Window) PumpResult {
+        return pumpMessages(self);
+    }
+
+    pub fn nativeHandle(self: Window) NativeHandle {
+        return .{
+            .hinstance = self.hinstance,
+            .hwnd = self.hwnd,
+        };
+    }
 };
 
 pub const Size = struct {
@@ -122,10 +133,15 @@ pub const Size = struct {
     height: u32,
 };
 
-pub const MessagePumpResult = struct {
+pub const PumpResult = struct {
     should_run: bool = true,
     resized: bool = false,
-    size: Size = .{ .width = config.WIDTH, .height = config.HEIGHT },
+    size: Size,
+};
+
+pub const NativeHandle = struct {
+    hinstance: HINSTANCE,
+    hwnd: HWND,
 };
 
 pub fn clientSize(hwnd: HWND) Size {
@@ -136,8 +152,8 @@ pub fn clientSize(hwnd: HWND) Size {
     return .{ .width = @intCast(width), .height = @intCast(height) };
 }
 
-pub fn pumpMessages(window: *Window) MessagePumpResult {
-    var result = MessagePumpResult{
+pub fn pumpMessages(window: *Window) PumpResult {
+    var result = PumpResult{
         .size = window.last_size,
     };
     var should_run = true;

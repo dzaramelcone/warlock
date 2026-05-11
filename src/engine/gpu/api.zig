@@ -1,4 +1,5 @@
 const std = @import("std");
+const scene_data = @import("scene_data.zig");
 
 pub const GpuPipeline = opaque {};
 pub const GpuRenderPass = opaque {};
@@ -216,100 +217,43 @@ pub const ByteSpan = []const u8;
 pub const all_mips: u8 = std.math.maxInt(u8);
 pub const all_layers: u16 = std.math.maxInt(u16);
 
-pub const CommandBuffer = struct {
-    ptr: *anyopaque,
-    vtable: *const VTable,
+pub fn Api(comptime Backend: type) type {
+    return struct {
+        pub const Graphics = Backend.Graphics;
+        pub const Commands = Backend.GraphicsCommands;
+        pub const SceneResources = Backend.SceneResources;
+        pub const RenderPass = Backend.ScenePipeline;
+        pub const Pipeline = Backend.ScenePipeline;
+        pub const IndexedVertexData = Backend.SceneBuffers;
+        pub const VertexDrawData = scene_data.VertexDrawData;
+        pub const PixelDrawData = scene_data.PixelDrawData;
 
-    pub const VTable = struct {
-        gpuBeginRenderPass: *const fn (*anyopaque, GpuRenderPassDesc) anyerror!void,
-        gpuEndRenderPass: *const fn (*anyopaque) anyerror!void,
-        gpuSetPipeline: *const fn (*anyopaque, *GpuPipeline) anyerror!void,
-        gpuSetIndexedVertexData: *const fn (*anyopaque, *GpuIndexedVertexData) anyerror!void,
-        gpuSetVertexDrawData: *const fn (*anyopaque, *GpuVertexDrawData) anyerror!void,
-        gpuSetPixelDrawData: *const fn (*anyopaque, *GpuPixelDrawData) anyerror!void,
-        gpuDrawIndexedInstanced: *const fn (*anyopaque, u32, u32, i32, u32) anyerror!void,
+        pub fn gpuBeginRenderPass(commands: *Commands, render_pass: *RenderPass, clear_color: [4]f32) !void {
+            try commands.gpuBeginRenderPass(render_pass, clear_color);
+        }
+
+        pub fn gpuEndRenderPass(commands: *Commands) !void {
+            try commands.gpuEndRenderPass();
+        }
+
+        pub fn gpuSetPipeline(commands: *Commands, pipeline: *Pipeline) !void {
+            try commands.gpuSetPipeline(pipeline);
+        }
+
+        pub fn gpuSetIndexedVertexData(commands: *Commands, vertex_data: *IndexedVertexData) !void {
+            try commands.gpuSetIndexedVertexData(vertex_data);
+        }
+
+        pub fn gpuSetVertexDrawData(commands: *Commands, data: *VertexDrawData) !void {
+            try commands.gpuSetVertexDrawData(data);
+        }
+
+        pub fn gpuSetPixelDrawData(commands: *Commands, data: *PixelDrawData) !void {
+            try commands.gpuSetPixelDrawData(data);
+        }
+
+        pub fn gpuDrawIndexedInstanced(commands: *Commands, first_index: u32, index_count: u32, vertex_offset: i32, instance_count: u32) !void {
+            try commands.gpuDrawIndexedInstanced(first_index, index_count, vertex_offset, instance_count);
+        }
     };
-
-    pub fn gpuBeginRenderPass(self: CommandBuffer, desc: GpuRenderPassDesc) !void {
-        try self.vtable.gpuBeginRenderPass(self.ptr, desc);
-    }
-
-    pub fn gpuEndRenderPass(self: CommandBuffer) !void {
-        try self.vtable.gpuEndRenderPass(self.ptr);
-    }
-
-    pub fn gpuSetPipeline(self: CommandBuffer, pipeline: *GpuPipeline) !void {
-        try self.vtable.gpuSetPipeline(self.ptr, pipeline);
-    }
-
-    pub fn gpuSetIndexedVertexData(self: CommandBuffer, vertex_data_gpu: *GpuIndexedVertexData) !void {
-        try self.vtable.gpuSetIndexedVertexData(self.ptr, vertex_data_gpu);
-    }
-
-    pub fn gpuSetVertexDrawData(self: CommandBuffer, data: *GpuVertexDrawData) !void {
-        try self.vtable.gpuSetVertexDrawData(self.ptr, data);
-    }
-
-    pub fn gpuSetPixelDrawData(self: CommandBuffer, data: *GpuPixelDrawData) !void {
-        try self.vtable.gpuSetPixelDrawData(self.ptr, data);
-    }
-
-    pub fn gpuDrawIndexedInstanced(self: CommandBuffer, first_index: u32, index_count: u32, vertex_offset: i32, instance_count: u32) !void {
-        try self.vtable.gpuDrawIndexedInstanced(self.ptr, first_index, index_count, vertex_offset, instance_count);
-    }
-};
-
-pub const Interface = struct {
-    gpuMalloc: *const fn (bytes: usize, alignment: usize, memory: Memory) ?*anyopaque,
-    gpuFree: *const fn (ptr: *anyopaque) void,
-    gpuHostToDevicePointer: *const fn (ptr: *anyopaque) ?*anyopaque,
-
-    gpuTextureSizeAlign: *const fn (desc: GpuTextureDesc) GpuTextureSizeAlign,
-    gpuCreateTexture: *const fn (desc: GpuTextureDesc, ptr_gpu: *anyopaque) ?*GpuTexture,
-    gpuTextureViewDescriptor: *const fn (texture: *GpuTexture, desc: GpuViewDesc) GpuTextureDescriptor,
-    gpuRWTextureViewDescriptor: *const fn (texture: *GpuTexture, desc: GpuViewDesc) GpuTextureDescriptor,
-
-    gpuCreateComputePipeline: *const fn (compute_ir: ByteSpan) ?*GpuPipeline,
-    gpuCreateGraphicsPipeline: *const fn (vertex_ir: ByteSpan, pixel_ir: ByteSpan, desc: GpuRasterDesc) ?*GpuPipeline,
-    gpuCreateGraphicsMeshletPipeline: *const fn (meshlet_ir: ByteSpan, pixel_ir: ByteSpan, desc: GpuRasterDesc) ?*GpuPipeline,
-    gpuFreePipeline: *const fn (pipeline: *GpuPipeline) void,
-
-    gpuCreateDepthStencilState: *const fn (desc: GpuDepthStencilDesc) ?*GpuDepthStencilState,
-    gpuCreateBlendState: *const fn (desc: GpuBlendDesc) ?*GpuBlendState,
-    gpuFreeDepthStencilState: *const fn (state: *GpuDepthStencilState) void,
-    gpuFreeBlendState: *const fn (state: *GpuBlendState) void,
-
-    gpuCreateQueue: *const fn () ?*GpuQueue,
-    gpuStartCommandRecording: *const fn (queue: *GpuQueue) ?*GpuCommandBuffer,
-    gpuSubmit: *const fn (queue: *GpuQueue, command_buffers: []const *GpuCommandBuffer) void,
-
-    gpuCreateSemaphore: *const fn (init_value: u64) ?*GpuSemaphore,
-    gpuWaitSemaphore: *const fn (sema: *GpuSemaphore, value: u64) void,
-    gpuDestroySemaphore: *const fn (sema: *GpuSemaphore) void,
-
-    gpuMemCpy: *const fn (cb: *GpuCommandBuffer, dest_gpu: *anyopaque, src_gpu: *anyopaque) void,
-    gpuCopyToTexture: *const fn (cb: *GpuCommandBuffer, dest_gpu: *anyopaque, src_gpu: *anyopaque, texture: *GpuTexture) void,
-    gpuCopyFromTexture: *const fn (cb: *GpuCommandBuffer, dest_gpu: *anyopaque, src_gpu: *anyopaque, texture: *GpuTexture) void,
-    gpuSetActiveTextureHeapPtr: *const fn (cb: *GpuCommandBuffer, ptr_gpu: *anyopaque) void,
-
-    gpuBarrier: *const fn (cb: *GpuCommandBuffer, before: Stage, after: Stage, hazards: HazardFlags) void,
-    gpuSignalAfter: *const fn (cb: *GpuCommandBuffer, before: Stage, ptr_gpu: *anyopaque, value: u64, signal: Signal) void,
-    gpuWaitBefore: *const fn (cb: *GpuCommandBuffer, after: Stage, ptr_gpu: *anyopaque, value: u64, op: Op, hazards: HazardFlags, mask: u64) void,
-
-    gpuSetPipeline: *const fn (cb: *GpuCommandBuffer, pipeline: *GpuPipeline) void,
-    gpuSetDepthStencilState: *const fn (cb: *GpuCommandBuffer, state: *GpuDepthStencilState) void,
-    gpuSetBlendState: *const fn (cb: *GpuCommandBuffer, state: *GpuBlendState) void,
-
-    gpuDispatch: *const fn (cb: *GpuCommandBuffer, data_gpu: *anyopaque, grid_dimensions: UVec3) void,
-    gpuDispatchIndirect: *const fn (cb: *GpuCommandBuffer, data_gpu: *anyopaque, grid_dimensions_gpu: *anyopaque) void,
-
-    gpuBeginRenderPass: *const fn (cb: *GpuCommandBuffer, desc: GpuRenderPassDesc) void,
-    gpuEndRenderPass: *const fn (cb: *GpuCommandBuffer) void,
-
-    gpuDrawIndexedInstanced: *const fn (cb: *GpuCommandBuffer, vertex_data_gpu: *anyopaque, pixel_data_gpu: *anyopaque, indices_gpu: *anyopaque, index_count: u32, instance_count: u32) void,
-    gpuDrawIndexedInstancedIndirect: *const fn (cb: *GpuCommandBuffer, vertex_data_gpu: *anyopaque, pixel_data_gpu: *anyopaque, indices_gpu: *anyopaque, args_gpu: *anyopaque) void,
-    gpuDrawIndexedInstancedIndirectMulti: *const fn (cb: *GpuCommandBuffer, data_vx_gpu: *anyopaque, vx_stride: u32, data_px_gpu: *anyopaque, px_stride: u32, args_gpu: *anyopaque, draw_count_gpu: *anyopaque) void,
-
-    gpuDrawMeshlets: *const fn (cb: *GpuCommandBuffer, meshlet_data_gpu: *anyopaque, pixel_data_gpu: *anyopaque, dim: UVec3) void,
-    gpuDrawMeshletsIndirect: *const fn (cb: *GpuCommandBuffer, meshlet_data_gpu: *anyopaque, pixel_data_gpu: *anyopaque, dim_gpu: *anyopaque) void,
-};
+}

@@ -115,34 +115,38 @@ pub const Scene = struct {
     }
 
     pub fn syncFromGame(self: *Scene, state: *const game.State) void {
-        self.render.time = state.t;
-        self.render.camera = orbitCamera(self.entities[0], state.t);
+        const t: f32 = @floatCast(state.t);
+        const cube_angle: f32 = @floatCast(state.cube_angle);
+        const pyramid_angle: f32 = @floatCast(state.pyramid_angle);
+
+        self.render.time = t;
+        self.render.camera = orbitCamera(self.entities[0], t);
 
         self.objects[0].transform = self.entities[1].transform;
         self.objects[0].transform.position = Vec3.add(
             self.entities[1].transform.position,
             .{
-                .x = @sin(state.t * 0.9) * 0.9,
-                .y = @sin(state.t * 1.7) * 0.35,
-                .z = @cos(state.t * 0.9) * 1.4,
+                .x = @sin(t * 0.9) * 0.9,
+                .y = @sin(t * 1.7) * 0.35,
+                .z = @cos(t * 0.9) * 1.4,
             },
         );
         self.objects[0].transform.rotation = Quat.mul(
-            Quat.axisAngle(Vec3.up, state.cube_angle),
-            Quat.axisAngle(.{ .x = 1, .y = 0, .z = 0 }, state.cube_angle * 0.6),
+            Quat.axisAngle(Vec3.up, cube_angle),
+            Quat.axisAngle(.{ .x = 1, .y = 0, .z = 0 }, cube_angle * 0.6),
         );
 
         self.objects[1].transform = self.entities[2].transform;
         self.objects[1].transform.position = Vec3.add(
             self.entities[2].transform.position,
             .{
-                .x = @cos(state.t * 0.7) * 1.1,
-                .y = @sin(state.t * 1.1 + 1.2) * 0.25,
-                .z = @sin(state.t * 0.7) * 1.8,
+                .x = @cos(t * 0.7) * 1.1,
+                .y = @sin(t * 1.1 + 1.2) * 0.25,
+                .z = @sin(t * 0.7) * 1.8,
             },
         );
         self.objects[1].transform.rotation = Quat.mul(
-            Quat.axisAngle(Vec3.up, state.pyramid_angle),
+            Quat.axisAngle(Vec3.up, pyramid_angle),
             Quat.axisAngle(.{ .x = 1, .y = 0, .z = 0 }, 0.25),
         );
     }

@@ -5,6 +5,8 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
     const enable_hot_reload = b.option(bool, "hot-reload", "Enable development hot reload") orelse (optimize == .Debug);
+    const platform_backend = b.option([]const u8, "platform", "Platform backend: win32") orelse "win32";
+    const graphics_backend = b.option([]const u8, "graphics", "Graphics backend: vulkan") orelse "vulkan";
     const project_dir = b.option([]const u8, "project-dir", "Project directory containing src/ and assets/") orelse "project";
     const project_src_dir = b.fmt("{s}/src", .{project_dir});
     const project_assets_dir = b.fmt("{s}/assets", .{project_dir});
@@ -13,8 +15,12 @@ pub fn build(b: *std.Build) void {
             "C:\\VulkanSDK\\1.4.341.1\\Bin",
         }) catch @panic("slangc not found; install the Vulkan SDK or pass -Dslangc=path\\to\\slangc.exe");
 
-    const options = b.addOptions();
-    options.addOption(bool, "enable_hot_reload", enable_hot_reload);
+    const app_options = b.addOptions();
+    app_options.addOption(bool, "enable_hot_reload", enable_hot_reload);
+
+    const engine_options = b.addOptions();
+    engine_options.addOption([]const u8, "platform_backend", platform_backend);
+    engine_options.addOption([]const u8, "graphics_backend", graphics_backend);
 
     const engine_module = b.createModule(.{
         .root_source_file = b.path("src/engine/runtime.zig"),
@@ -22,6 +28,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .link_libc = true,
     });
+    engine_module.addOptions("build_options", engine_options);
     engine_module.linkSystemLibrary("user32", .{});
 
     const project_module = b.createModule(.{
@@ -45,7 +52,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .link_libc = true,
     });
-    root_module.addOptions("build_options", options);
+    root_module.addOptions("build_options", app_options);
     root_module.addImport("engine", engine_module);
     root_module.addImport("project", project_module);
     root_module.linkSystemLibrary("user32", .{});
@@ -69,7 +76,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .link_libc = true,
     });
-    test_module.addOptions("build_options", options);
+    test_module.addOptions("build_options", app_options);
     test_module.addImport("engine", engine_module);
     test_module.addImport("project", project_module);
     test_module.addImport("cook", cook_steps.module);

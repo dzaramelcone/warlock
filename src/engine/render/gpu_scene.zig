@@ -1,52 +1,17 @@
 const std = @import("std");
 const config = @import("../config.zig");
+const scene_data = @import("../gpu/scene_data.zig");
 const math = @import("../math/mod.zig");
 const mesh_mod = @import("../asset/mesh.zig");
 const scene_mod = @import("scene.zig");
 
 const Mat4 = math.Mat4;
-
-pub const Vertex = extern struct {
-    position: [3]f32,
-    uv: [2]f32,
-    barycentric: [3]f32,
-    edge_mask: [3]f32,
-    color: u32,
-};
-
-pub const Draw = extern struct {
-    vertex_offset: u32,
-    index_offset: u32,
-    index_count: u32,
-    material_index: u32,
-};
-
-pub const VertexDrawData = extern struct {
-    mvp: [16]f32,
-};
-
-pub const PixelDrawData = extern struct {
-    base_color: u32,
-    shader_id: u32,
-    wire_strength_bits: u32 = 0,
-    _pad1: u32 = 0,
-};
-
-pub const Packet = struct {
-    vertices: []Vertex,
-    indices: []u32,
-    draws: []Draw,
-    vertex_draws: []VertexDrawData,
-    pixel_draws: []PixelDrawData,
-
-    pub fn deinit(self: Packet, allocator: std.mem.Allocator) void {
-        allocator.free(self.pixel_draws);
-        allocator.free(self.vertex_draws);
-        allocator.free(self.draws);
-        allocator.free(self.indices);
-        allocator.free(self.vertices);
-    }
-};
+const color = math.color;
+pub const Vertex = scene_data.Vertex;
+pub const Draw = scene_data.Draw;
+pub const VertexDrawData = scene_data.VertexDrawData;
+pub const PixelDrawData = scene_data.PixelDrawData;
+pub const Packet = scene_data.Packet;
 
 pub fn buildPacket(allocator: std.mem.Allocator, scene: *const scene_mod.Scene, width: u32, height: u32) !Packet {
     var vertex_count: usize = 0;
@@ -126,24 +91,8 @@ pub fn buildPacket(allocator: std.mem.Allocator, scene: *const scene_mod.Scene, 
     };
 }
 
-fn averageColor(a: u32, b: u32, c: u32) u32 {
-    const ar = (a >> 16) & 0xff;
-    const ag = (a >> 8) & 0xff;
-    const ab = a & 0xff;
-    const br = (b >> 16) & 0xff;
-    const bg = (b >> 8) & 0xff;
-    const bb = b & 0xff;
-    const cr = (c >> 16) & 0xff;
-    const cg = (c >> 8) & 0xff;
-    const cb = c & 0xff;
-    const r = (ar + br + cr) / 3;
-    const g = (ag + bg + cg) / 3;
-    const blue = (ab + bb + cb) / 3;
-    return (r << 16) | (g << 8) | blue;
-}
-
 fn coplanarFaceColor(mesh: mesh_mod.Mesh, triangle: mesh_mod.Triangle) u32 {
-    if (mesh.triangles.len > 256) return averageColor(
+    if (mesh.triangles.len > 256) return color.averagePackedRgb(
         mesh.vertices[triangle.a].color,
         mesh.vertices[triangle.b].color,
         mesh.vertices[triangle.c].color,
@@ -159,20 +108,20 @@ fn coplanarFaceColor(mesh: mesh_mod.Mesh, triangle: mesh_mod.Triangle) u32 {
         if (!samePlane(mesh, plane, trianglePlane(mesh, other))) continue;
         const indices = [_]usize{ other.a, other.b, other.c };
         for (indices) |index| {
-            const color = mesh.vertices[index].color;
-            r += (color >> 16) & 0xff;
-            g += (color >> 8) & 0xff;
-            b += color & 0xff;
+            const packed_color = mesh.vertices[index].color;
+            r += (packed_color >> 16) & 0xff;
+            g += (packed_color >> 8) & 0xff;
+            b += packed_color & 0xff;
             count += 1;
         }
     }
 
-    if (count == 0) return averageColor(
+    if (count == 0) return color.averagePackedRgb(
         mesh.vertices[triangle.a].color,
         mesh.vertices[triangle.b].color,
         mesh.vertices[triangle.c].color,
     );
-    return ((r / count) << 16) | ((g / count) << 8) | (b / count);
+    return color.averageAccumulatedPackedRgb(r, g, b, count);
 }
 
 const Plane = struct {
