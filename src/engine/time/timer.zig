@@ -1,3 +1,5 @@
+const Seconds = @import("types.zig").Seconds;
+
 extern "kernel32" fn QueryPerformanceCounter(lpPerformanceCount: *i64) callconv(.winapi) i32;
 extern "kernel32" fn QueryPerformanceFrequency(lpFrequency: *i64) callconv(.winapi) i32;
 
@@ -13,10 +15,10 @@ pub const Timer = struct {
         return .{ .last = now, .frequency = frequency };
     }
 
-    pub fn lap(self: *Timer) f64 {
+    pub fn lap(self: *Timer) Seconds {
         var now: i64 = 0;
         _ = QueryPerformanceCounter(&now);
-        const dt = @as(f64, @floatFromInt(now - self.last)) / @as(f64, @floatFromInt(self.frequency));
+        const dt = @as(Seconds, @floatFromInt(now - self.last)) / @as(Seconds, @floatFromInt(self.frequency));
         self.last = now;
         return dt;
     }
