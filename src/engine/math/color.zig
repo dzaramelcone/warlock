@@ -35,3 +35,12 @@ pub fn averageAccumulatedPackedRgb(r: u32, g: u32, b: u32, count: u32) u32 {
         .b = b / count,
     }).toPacked();
 }
+
+pub fn animatedClear(time_seconds: f32) [4]f32 {
+    return .{
+        0.08 + 0.06 * @sin(time_seconds * 0.7),
+        0.10 + 0.08 * @sin(time_seconds * 0.5 + 1.2),
+        0.16 + 0.10 * @sin(time_seconds * 0.4 + 2.1),
+        1.0,
+    };
+}
