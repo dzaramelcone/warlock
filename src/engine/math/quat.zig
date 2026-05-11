@@ -71,3 +71,18 @@ pub const Quat = struct {
         } };
     }
 };
+
+test "quaternion matrix matches vector rotation" {
+    const std = @import("std");
+    const q = Quat.mul(
+        Quat.axisAngle(Vec3.up, 1.1),
+        Quat.axisAngle(.{ .x = 1, .y = 0, .z = 0 }, 0.4),
+    );
+    const v = Vec3{ .x = 0.7, .y = -0.2, .z = 1.4 };
+    const by_quat = q.rotateVec3(v);
+    const by_mat = q.toMat4().transform(.{ .x = v.x, .y = v.y, .z = v.z, .w = 1 });
+
+    try std.testing.expectApproxEqAbs(by_quat.x, by_mat.x, 0.001);
+    try std.testing.expectApproxEqAbs(by_quat.y, by_mat.y, 0.001);
+    try std.testing.expectApproxEqAbs(by_quat.z, by_mat.z, 0.001);
+}
