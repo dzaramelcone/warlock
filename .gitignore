@@ -2,3 +2,4 @@ zig-out*
 .zig-cache*
 .tools*
 zig-pkg*
+todo*
