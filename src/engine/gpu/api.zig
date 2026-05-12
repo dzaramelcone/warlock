@@ -228,32 +228,32 @@ pub fn Api(comptime Backend: type) type {
         pub const VertexDrawData = scene_data.VertexDrawData;
         pub const PixelDrawData = scene_data.PixelDrawData;
 
-        pub fn gpuBeginRenderPass(commands: *Commands, render_pass: *RenderPass, clear_color: [4]f32) !void {
-            try commands.gpuBeginRenderPass(render_pass, clear_color);
+        pub fn beginRenderPass(commands: *Commands, render_pass: *RenderPass, clear_color: [4]f32) !void {
+            try commands.beginRenderPass(render_pass, clear_color);
         }
 
-        pub fn gpuEndRenderPass(commands: *Commands) !void {
-            try commands.gpuEndRenderPass();
+        pub fn endRenderPass(commands: *Commands) !void {
+            try commands.endRenderPass();
         }
 
-        pub fn gpuSetPipeline(commands: *Commands, pipeline: *Pipeline) !void {
-            try commands.gpuSetPipeline(pipeline);
+        pub fn setPipeline(commands: *Commands, pipeline: *Pipeline) !void {
+            try commands.setPipeline(pipeline);
         }
 
-        pub fn gpuSetIndexedVertexData(commands: *Commands, vertex_data: *IndexedVertexData) !void {
-            try commands.gpuSetIndexedVertexData(vertex_data);
+        pub fn setIndexedVertexData(commands: *Commands, vertex_data: *IndexedVertexData) !void {
+            try commands.setIndexedVertexData(vertex_data);
         }
 
-        pub fn gpuSetVertexDrawData(commands: *Commands, data: *VertexDrawData) !void {
-            try commands.gpuSetVertexDrawData(data);
+        pub fn setVertexDrawData(commands: *Commands, data: *VertexDrawData) !void {
+            try commands.setVertexDrawData(data);
         }
 
-        pub fn gpuSetPixelDrawData(commands: *Commands, data: *PixelDrawData) !void {
-            try commands.gpuSetPixelDrawData(data);
+        pub fn setPixelDrawData(commands: *Commands, data: *PixelDrawData) !void {
+            try commands.setPixelDrawData(data);
         }
 
-        pub fn gpuDrawIndexedInstanced(commands: *Commands, first_index: u32, index_count: u32, vertex_offset: i32, instance_count: u32) !void {
-            try commands.gpuDrawIndexedInstanced(first_index, index_count, vertex_offset, instance_count);
+        pub fn drawIndexedInstanced(commands: *Commands, first_index: u32, index_count: u32, vertex_offset: i32, instance_count: u32) !void {
+            try commands.drawIndexedInstanced(first_index, index_count, vertex_offset, instance_count);
         }
     };
 }

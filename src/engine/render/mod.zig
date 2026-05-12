@@ -8,4 +8,4 @@ pub const presentation = @import("presentation.zig");
 pub const scene = @import("scene.zig");
 pub const shaders = @import("shaders.zig");
 
-pub const Renderer = renderer.ForGpu(gpu.Api);
+pub const Renderer = renderer.For(gpu.Api);
