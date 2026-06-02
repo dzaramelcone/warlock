@@ -5,7 +5,6 @@ const QueueFamilySelection = @import("queues.zig").Selection;
 const Swapchain = @import("../present/Swapchain.zig");
 const FrameResources = @import("../present/FrameResources.zig");
 const FrameResource = FrameResources.Resource;
-const gpu_scene = @import("../../scene_data.zig");
 const render_resources = @import("../../../render/resources.zig");
 const util = @import("../util.zig");
 const vk = @import("../c.zig");
